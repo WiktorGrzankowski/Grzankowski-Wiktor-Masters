@@ -1,0 +1,84 @@
+\usepackage[utf8]{inputenc} 
+\usepackage{polski}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage[shortlabels]{enumitem}
+\usepackage{mathdots}
+\usepackage{url}
+\usepackage{xfrac}
+\usepackage{array}
+\usepackage{hyperref} % referencje do miejsc w pdfie
+\usepackage{environ} % zaawansowane środowiska
+\usepackage{minted} % formatowanie kodu
+\usepackage{tabularx} % lepsze tabelki
+\usepackage{wrapfig} % do ustawiania pozycji obrazków
+\usepackage{multicol} % wiele kolumn
+\usepackage{csquotes}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage[table]{xcolor}
+\usepackage{pifont}
+\usepackage[
+    backend=biber,
+    style=numeric,
+    sorting=none,
+    urldate=long,
+]{biblatex}
+
+% --- Podstawowe matematyczne symbole
+\newcommand{\wtw}{\quad \Leftrightarrow \quad}  % wtedy i tylko wtedy
+\newcommand{\bigexists}{\mbox{\Large $\mathsurround0pt\exists$}\hspace{0.2em}} 
+\newcommand{\bigforall}{\mbox{\Large $\mathsurround0pt\forall$}\hspace{0.1em}}
+\newcommand{\lr}[1]{\left\langle #1 \right\rangle}
+\renewcommand{\geq}{\geqslant}
+\renewcommand{\leq}{\leqslant}
+
+% --- Oznaczenia zbiorów
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\KK}{\mathbb{K}}
+\newcommand{\QQ}{\mathbb{Q}}
+
+% --- Tekst w math mode
+\newcommand{\dm}[1]{\displaystyle{#1}}  % skrót do displaystyle
+\newcommand{\textq}[1]{\quad \text{#1} \quad}
+\newcommand{\textqq}[1]{\qquad \text{#1} \qquad}
+
+% --- Kolory
+\newcommand{\purple}[1]{\textcolor{purple}{#1}}
+\newcommand{\teal}[1]{\textcolor{teal}{#1}}
+\newcommand{\gray}[1]{\textcolor{gray}{#1}}
+\newcommand{\grey}[1]{\textcolor{gray}{#1}}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\orange}[1]{\textcolor{orange}{#1}}
+
+\newcommand{\app}{\ding{51}}  % Approval symbol macro
+
+% --- Kod Pythona
+\newminted[python]{python}{
+    autogobble,
+    mathescape,
+    frame = leftline,
+    framerule = 1pt,
+    framesep = 8pt
+}
+\newmintinline{python}{}
+\addbibresource{bibliography.bib} 
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor={black},
+    citecolor={blue},
+    urlcolor={blue}
+}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}
+\newtheorem{counterexample}{Counterexample}
+\newtheorem{prooff}{Proof}
+\newtheorem{theorem}{Theorem}

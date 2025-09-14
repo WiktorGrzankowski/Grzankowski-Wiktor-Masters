@@ -1,0 +1,22 @@
+fname,ptype,exhaustive,mode,exists
+poland_czestochowa_2020_czestochowka-parkitka.pb,cardinal_times_cost,False,stable priceable,True
+poland_czestochowa_2020_podjasnogorska.pb,cardinal_times_cost,False,stable priceable,True
+poland_gdynia_2020_babie-doly-large.pb,approval_times_cost,False,stable priceable,False
+poland_gdynia_2020_karwiny-large.pb,approval_times_cost,False,stable priceable,False
+poland_gdynia_2020_pustki-cisowskie-demptowo-large.pb,approval_times_cost,False,stable priceable,False
+poland_lodz_2020_andrzejow.pb,approval_times_cost,False,stable priceable,True
+poland_lodz_2020_mileszki.pb,approval_times_cost,False,stable priceable,False
+poland_lodz_2020_nowosolna.pb,approval_times_cost,False,stable priceable,False
+poland_lodz_2022_nowosolna.pb,approval_times_cost,False,stable priceable,False
+poland_warszawa_2017_anin.pb,approval_times_cost,False,stable priceable,False
+poland_warszawa_2017_zoliborz-poludniowy-powazki.pb,approval_times_cost,False,stable priceable,True
+poland_warszawa_2018_obszar-2-stara-milosna.pb,approval_times_cost,False,stable priceable,False
+poland_warszawa_2018_rejon-9.pb,approval_times_cost,False,stable priceable,False
+poland_warszawa_2018_targowek-fabryczny-elsnerow-i-utrata.pb,approval_times_cost,False,stable priceable,False
+poland_warszawa_2019_sluzew.pb,approval_times_cost,False,stable priceable,False
+poland_warszawa_2017_zoliborz-centralny.pb,approval_times_cost,False,stable priceable,timeout
+poland_warszawa_2018_brodno.pb,approval_times_cost,False,stable priceable,timeout
+poland_warszawa_2018_stare-wlochy.pb,approval_times_cost,False,stable priceable,timeout
+poland_warszawa_2019_obszar-i-nowa-praga-z-pelcowizna.pb,approval_times_cost,False,stable priceable,timeout
+poland_warszawa_2019_sielce.pb,approval_times_cost,False,stable priceable,timeout
+poland_warszawa_2019_wesola.pb,approval_times_cost,False,stable priceable,timeout

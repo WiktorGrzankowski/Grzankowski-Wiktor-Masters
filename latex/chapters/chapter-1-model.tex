@@ -1,0 +1,357 @@
+\chapter{Model}\label{chap:1}
+In this chapter, we introduce the formal model used throughout the thesis. We begin with precise definitions for different variants of elections and election rules, which are further used for analysis. We also introduce the most important axioms, known from existing literature, while providing detailed examples showcasing their behaviour and potential downsides.
+\section{Elections}
+\begin{definition}
+\textbf{Election} is a tuple $(N, C, b, \text{cost}, \{u_i\}_{i\in N})$, where
+\begin{itemize}
+    \item $N = [1,\dots, n]$ is the set of voters, in short written as $N=[n]$.
+    \item $C=\{c_1,\dots,c_m\}$ is the set of candidates or projects.
+    \item $b\in \QQ_{\ge 0}$ is the available budget.
+    \item $\text{cost} : C \to \QQ_{\ge 0}$ is a function that assigns, for each candidate $c\in C$, the total cost that needs to be paid by voters if $c$ is to be selected.
+    \item Each voter $i$ is associated with an additive utility function $u_i : C \to \QQ_{\ge 0}$, which expresses how much value voter $i$ derives from each candidate. For any subset $T\subseteq C$, the total utility enjoyed by voter $i$ for $T$ is $u_i(T)=\sum_{c\in T}u_i(c)$. For any subset $S\subseteq N$, we write $u_S(T)=\sum_{i\in S}\sum_{c\in T}u_i(c)$.
+    \item We assume that every candidate has strictly positive utility for at least one voter; formally $u_N(c)>0 $ for all $c\in C$.
+    \item We say that voter $i$ supports candidate $c$ if $u_i(c)>0$.
+\end{itemize}
+\end{definition}
+In this thesis, we focus on election instances arising in the context of \emph{participatory budgeting}~\cite{ParticipatoryBudgeting}. This setting is particularly well-suited to the analysis of budget-constrained selection rules and fairness axioms, which are the central subject of this work.
+
+\begin{definition}
+\textbf{Committee election} is an election, where the budget is an integer equal to the committee size, and each candidate has a cost of $1$. When all candidates are associated with an equal cost, we say that the unit cost assumption applies.
+
+
+$W$ is a viable outcome if and only if $|W|\le b$. In the case of committee elections, the outcomes are called committees.
+\end{definition}
+\begin{definition}
+An election is said to use \textbf{approval utilities} when each voter $i\in N$ assigns to every candidate $c\in C$ a utility value $u_i(c)=\{0,1\}$.
+
+
+The approval set of voter $i$ is $A(i)=\{c\in C \ | \ u_i(c)=1\}$ and $i$ approves candidate $c$ if $c\in A(i)$. Similarly, we write the set of supporters of candidate $c$ as $N(c)=\{i\in N \ | \ u_i(c)=1\}$.
+\end{definition}
+In the literature, often a special case of the elections is studied: approval-based committee elections.
+\begin{definition}
+\textbf{Cardinal utilities} in elections are the more general utility functions $C \to \QQ_{\ge}$. Approval utilities can be seen as a special case of cardinal utilities.
+\end{definition}
+Cardinal utilities by default provide little to no limitations on how the points can be assigned. There are variations to the most general approach, some of which are present in the empirical analysis in future chapters.
+\section{Election rules}
+An \textbf{election rule} is a function that for each election returns a non-empty set of feasible outcomes, also called allocations. Further we study numerous election rules, such as the Utilitarian Greedy rule or the Method of Equal Shares\cite{EqualShares}.
+Different rules formalise different approaches to finding a desirable outcome. Depending on the set goal, rules can aim to maximise overall satisfaction of the entire group or try to provide stronger fairness guarantees, or some other properties. Testing multiple methods against mathematical axioms allows us to find their strong points and limitations in practice. Also, some definitions apply only to approval-based committee-elections, while others are more flexible. In particular, for participatory budgeting, it is important to account for several types of ballots. 
+
+\begin{definition}
+The \textbf{Utilitarian Greedy} is a simple election rule, aiming to maximise total satisfaction for voters. In fact, it is optimal up to one project for this goal. This method starts with an empty outcome $W=\varnothing$ and sequentially selects a project $p$ maximizing the ratio
+$$
+\sum_{i\in N}\frac{u_i(p)}{cost(p)}.
+$$
+If $cost(W)+cost(p)\le b$, where $b$ is the initial budget, then the project $p$ is added to the outcome $W$. Otherwise, the project is removed from the list of considered projects. This step is repeated until no projects are in consideration~\cite{DataToolsAndPB}. 
+\end{definition}
+The Utilitarian Greedy method is used in vast majority of cities when counting participatory budgeting votes.
+
+\begin{definition}
+The \textbf{Method of Equal Shares} is an election rule that aims to lead to fair outcomes, representing true voters' preferences as closely as possible. At the beginning, each of the $n$ voters is endowed with an equal fraction $\frac{b}{n}$ of the total budget $b$. It starts with an empty outcome $W=\varnothing$ and sequentially adds projects to the outcome. In order to add any project $c$, its supporters must pay for it: 
+$$
+\sum_{i \in N}p_i(c)=cost(c).
+$$ 
+where $p_i(c)$ is the amount of money that voter $i$ pays for candidate $c$. Moreover, $b_i=\frac{b}{n}-p_i(W)$ is the remainder of money that voter $i$ has left, where 
+$$
+p_i(W)=\sum_{c\in W}p_i(c)\le \frac{b}{n}
+$$
+is the total amount of money spent by $i$ on $W$. We say that candidate $c\notin W$ is $\rho$-affordable for $\rho \ge 0$ if
+$$
+\sum_{i\in N}\min(b_i, u_i(c)\cdot \rho)=cost(c).
+$$
+The rule selects a candidate $c\notin W$ that is $\rho$-affordable for the smallest $\rho$ and the individual payments are
+$$
+p_i(c)=\min(b_i, u_i(c)\cdot \rho).
+$$
+If no candidate is $\rho$-affordable for any $\rho$, then the method terminates.
+\end{definition}
+The Method of Equal Shares, though currently not nearly as popular in practice, is used in a few European cities such as Polish Świecie, or Swiss Aarau and Winterthur, with more cities to start using it in the future~\cite{EqualSharesWebsite}.
+
+A significant downside to vanilla MES is that it does not always select exhaustive outcomes and there are two main variations to it, intending to solve this issue. 
+
+\begin{definition}
+The \textbf{Method of Equal Shares with budget increment} is a simple alteration to the original MES algorithm. It runs the method repeatedly, increasing voters' budget by some fixed amount each time, until an exhaustive allocation is found, or an infeasible allocation is selected.
+\end{definition}
+MES+Inc also does not guarantee exhaustiveness, but increases the probability of finding one, while likely preserving many of MES' properties. The second variation always returns exhaustive allocations, but it is also more probable that it will lose some of MES' qualities.
+\begin{definition}
+The \textbf{Method of Equal Shares with budget increment and greedy fill} is another variation of the Method of Equal Shares. It behaves exactly like MES with budget increment. However, if a non-exhaustive allocation is returned, it uses the Utilitarian Greedy algorithm to spend the remainder of the budget.
+\end{definition}
+
+We also consider another variation, which does not aim to boost exhaustiveness, but rather adds a slight tweak to the original algorithm.
+\begin{definition}
+The \textbf{Method of Equal Shares with Bounded Overspending}~\cite{BOS} works similarly to vanilla MES. As in the original algorithm, every voter starts with the same endowment, each project is evaluated at a single per-unit price, and a supporter never pays more than their own remaining budget --- payments are capped exactly like in MES at $\min(b_i, \rho\cdot u_i(c))$. The difference is in the selection metric.
+
+We extend the notion of $\rho-$affordability: for $\alpha\in (0,1]$ and $\rho\ge 0$, a candidate $c\notin W$ is $(\alpha, \rho)-$affordable if
+$$
+\alpha\cdot cost(c)=\sum_{i\in N}\min(b_i, \alpha \cdot u_i(c)\cdot \rho).
+$$
+The algorithm also begins with an empty outcome $W$. In each round, among all candidates that still fit the remaining budget, BOS chooses a tuple $(c^*, \alpha^*, \rho^*)$ such that $c^*$ is $(\alpha^*, \rho^*)-$affordable and the normalized price $\frac{\rho^*}{\alpha^*}$ is minimal. Then $c^*$ is added to the allocation $W$. The accounts of the supporters of $c^*$ are updated accordingly
+$$
+b_i := \max(0, b_i-u_i(c^*)\cdot \rho^*)
+$$
+The process stops when no candidate is $(\alpha, \rho)-$affordable for any $\alpha\in(0,1], \ \rho\ge 0$.
+\end{definition}
+
+We study all methods in Chapter ~\ref{chap:4}.
+\section{Satisfaction measures}
+To formally formulate proportional representation, different approaches have been developed. Measuring a voter's satisfaction from an outcome can depend on the total number of projects they support in that outcome, or on the total cost of the supported projects, or on plenty of other more sophisticated \emph{satisfaction measures}~\cite{BrillForster2023}.
+\begin{definition}
+A \textbf{satisfaction measure} is a voter‐specific function that assigns to each project (or to each set of projects) a numerical value representing the voter’s perceived satisfaction from having that project (or those projects) funded.
+\end{definition}
+As mentioned, there are numerous satisfaction measures defined in literature, each having its advantages and disadvantages. In this thesis, we concentrate on $2$ of the most important ones.
+\begin{definition}
+\textbf{Cost satisfaction} is equal to the total cost of the selected projects appearing with any utility assigned to them
+$$
+sat_i^{cost}(W)=\sum_{c\in W}sat_i^{cost}(c)=\sum_{c\in W}cost(c)\cdot u_i(c).
+$$
+\end{definition}
+\begin{definition}
+\textbf{Additive Cardinal satisfaction} is equal to the sum over the selected projects appearing in the ballots of the score assigned by the voter: 
+$$
+sat_i^{Card}(W)=u_i(W)=\sum_{c\in W}u_i(c).
+$$
+\end{definition}
+Different satisfaction measures can lead to very different notions of proportionality. Under cost-weighted satisfaction, expensive projects may be preferred over slightly less popular but significantly cheaper ones, since a voter’s utility scales with project cost. By contrast, additive cardinal satisfaction treats every project equally—regardless of its cost—which can underemphasise high-cost initiatives even if they enjoy relatively strong support. It is therefore essential to test proportionality axioms across multiple satisfaction frameworks. Axioms, and election rules, that extend cleanly to both cost-weighted and additive settings are far more robust—and more likely to capture meaningful notions of proportionality in real PB deployments.
+\section{Priceability}
+The concept of priceability, first defined by Peters and Skowron \cite{ProportionalityAndLimits} is a basic market-based axiom aiming to capture some form of proportional representation.
+\begin{definition}
+A \textbf{price system} consists of a pair $\text{ps} = (b, \{p_i\}_{i\in N})$, where $b\in \RR_+$ denotes the budget assigned to a single voter. Each voter $i \in N$ is equipped with a payment function $p_i : C \to [0,b]$, which determines the amount that the voter pays towards each candidate. For convenience, we write $p_i(W)=\sum_{c\in W}p_i(c)$ for all $i\in N$ and $W\subseteq C$. A committee $W$ is said to be supported by a price system $\text{ps}=(b, \{p_i\}_{i\in N})$ provided that the conditions listed below are fulfilled:
+\begin{enumerate}[label=(C\arabic*)]
+    \item Voters are only allowed to contribute funds toward candidates they approve of. Formally, for every $ i \in N $ and $ c \in C $ s.t. $u_i(c)=0$ it holds that $ p_i(c) = 0 $.
+    
+    \item No voter spends more than their budget. That is, the total payments made by any voter $ i \in N $ must satisfy $ \sum_{c \in C} p_i(c) \leq b$.
+    
+    \item Each elected candidate $c$ must collect its full price through contributions. Formally, for every candidate $ c \in W $, we require $ \sum_{i \in N} p_i(c) = cost(c)$.
+    
+    \item No funds may be allocated to candidates who are not elected. Specifically, for each \( c \notin W \), the total contribution must be zero: \( \sum_{i \in N} p_i(c) = 0 \).
+
+    \item Supporters of each unelected candidate have a remaining budget of at most its cost: $\sum_{i\in N(c)}r_i\le cost(c)$ for each $c\notin W$, where $r_i=b-\sum_{c'\in W}p_i(c')$ for each $i\in N$.
+\end{enumerate}
+\end{definition}
+The notion of priceability works both for approval-based elections as well as for elections with cardinal utilities, as long as the notion of approving candidates is extended to cardinal utilities. In the next chapters, we will assume, that supporting candidates means assigning them any positive value: $c \in A(i) \iff u_i(c)>0$.
+\begin{definition}
+    Allocation W is a \textbf{priceable allocation} if there exists a price system $\text{ps}=(b, \{p_i\}_{i\in N})$ that supports $W$.
+\end{definition}
+If a price system supports an allocation $W$, then it means that supporters of any unelected candidate, cannot collectively fund it --- meaning they must have spent a significant part of their budget on $W$. Thus, all voters have likely spent a similar, large part of the money they started with, which should lead to a rather proportional outcome with solid satisfaction for all.
+\begin{example}
+Table on the left shows costs of candidates in a sample election with approval-based preferences, where the total budget available for all projects is $100$. Table on the right shows actual priceable budget allocation where every voter is given $25$ of virtual currency. The committee, highlighted in light yellow, is supported by a price system with budget $:= 25$ and payment functions defined as in the table.
+
+\begin{minipage}{0.45\textwidth}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+        & cost & $v_1$ & $v_2$ & $v_3$ & $v_4$ & $v_5$ \\
+\midrule
+$c_1$ & 25 & \app & \app & \app & \app &  \\
+$c_2$ & 25 &      & \app &      &      &  \\
+$c_3$ & 80 & \app &      & \app & \app & \app \\
+$c_4$ & 20 &      &      &      &      & \app \\
+$c_5$ & 15 &      &      & \app &      &  \\
+\bottomrule
+\end{tabular}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.5\textwidth}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+        & cost & $v_1$ & $v_2$ & $v_3$ & $v_4$ & $v_5$ \\
+\midrule
+$c_1$ & 25 & 0 & 0 & 0 & 0 & 0 \\
+$c_2$ & 25 & 0 & 0 & 0 & 0 & 0 \\
+\rowcolor{yellow!10}
+$c_3$ & 80 & 25 & 0 & 25 & 25 & 5 \\
+\rowcolor{yellow!10}
+$c_4$ & 20 & 0 & 0 & 0 & 0 & 20 \\
+$c_5$ & 15 & 0 & 0 & 0 & 0 & 0 \\
+\rowcolor{yellow!30}
+$\sum$ & 100 & 25 & 0 & 25 & 25 & 25 \\
+$r_i$ & - & 0 & 25 & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+One can clearly see that constraints $(C1)-(C4)$ are satisfied. Only non-trivial of the constraints is $(C5)$. It still satisfied, as the only voter with unspent budget is $v_2$. She supports candidate $c_2$, however she has a leftover budget of exactly $b=25$, meaning it just barely satisfies the constraint. The same reasoning applies for candidate $c_1$. If the cost of candidate $c_2$ was $24$, then the allocation of $[c_3,c_4]$ would not be priceable. However, some other allocation would be priceable, because a feasible priceable committee always exists \cite{ProportionalityAndLimits}.
+\end{example}
+Though priceability is an intuitive axiom which ensures that each voter has a roughly similar contribution to the final outcome, it does not provide strong proportionality guarantees on its own.
+\begin{example}
+Table on the left shows costs of candidates in a sample election with approval-based preferences, where the total budget for all candidates is $3$. Table on the right shows actual priceable budget allocation where every voter is given $1$ of virtual currency. The committee, highlighted in light yellow, is supported by a price system with budget $:= 1$ and payment functions defined as in the table.
+\leavevmode\\ 
+\begin{minipage}{0.45\textwidth}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+        & cost & $\#app$ & $v_1$ & $v_2$ & $v_3$  \\
+\midrule
+$c_1$ & 1 & 1 & \app &    \\
+$c_2$ & 1 & 1&     & \app  \\
+$c_3$ & 1 & 1& &     & \app \\
+$c_4$ & 1 & 3&\app & \app    & \app     \\
+$c_5$ & 1 & 3&\app & \app & \app       \\
+$c_6$ & 1 & 3& \app  & \app & \app   \\
+\bottomrule
+\end{tabular}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.45\textwidth}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+        & cost & $v_1$ & $v_2$ & $v_3$  \\
+\midrule
+\rowcolor{yellow!10}
+$c_1$ & 1 & 1 & 0 & 0    \\
+\rowcolor{yellow!10}
+$c_2$ & 1 & 0 & 1 & 0  \\
+\rowcolor{yellow!10}
+$c_3$ & 1 & 0 & 0 & 1 \\
+$c_4$ & 1 & 0 & 0 & 0     \\
+$c_5$ & 1 & 0 & 0 & 0       \\
+$c_6$ & 1 & 0 & 0 & 0   \\
+\rowcolor{yellow!30}
+$\sum$ & 3 & 1 & 1 & 1  \\
+$r_i$ & - & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\vspace{0.5em}
+\leavevmode\\ 
+The committee $[c_1,c_2,c_3]$ is priceable, though it is clearly not the best choice, because committee $[c_4,c_5,c_6]$ provides far better satisfaction for all voters. It is worth noting that $[c_4,c_5,c_6]$ is also priceable, as there can be multiple committees supported by different price systems.
+\end{example}
+\section{Core}
+\begin{definition}
+An outcome is in the \textbf{core} if for every $S\subseteq N$ and $T\subseteq C$ with $\frac{|S|}{n }\ge \frac{cost(T)}{b}$ there exists $i\in S$ such that $u_i(W)\ge u_i(T)$.
+\end{definition}
+First proposed by Aziz et al.\cite{AzizEtAl}, the core is an axiom for proportionality, which originates from cooperative game theory~\cite{GameTheoryCore}. Intuitively, the core captures very strong notions of fairness and stability --- no group of voters can form a blocking coalition and "walk away" from the rest of the voters with an allocation, which is more or equally satisfying for all those from the blocking coalition.
+
+The core comes with serious computational challenges. Verifying if a solution satisfies core conditions requires iterating over all possible coalitions of voters and bundles of projects they might want to choose, leading to the coNP-hardness of the problem.
+\begin{example}
+Consider an approval-based committee election with $50$ voters and $13$ candidates and a committee of size $5$ to choose. The voters have the following preferences:
+\begin{table}[H]
+\centering
+\begin{tabular}{lllcccccc}
+\toprule
+        & cost & $\#app$& $[v_1$--$v_{10}]$ & $[v_{11}$--$v_{19}]$ & $[v_{21}$--$v_{29}]$ & $[v_{31}$--$v_{39}]$ & $[v_{41}$--$v_{49}]$ & $[v_{20},v_{30},v_{40},v_{50}]$ \\
+\midrule
+\rowcolor{purple!10}
+$c_1$--$c_5$ & 1 & 10 & \app &       &       &       &       &       \\
+$c_6$        & 1&  9&      & \app &       &       &       &       \\
+$c_7$        & 1&  9&    &       & \app &       &       &       \\
+$c_8$        &  1& 9&    &       &       & \app &       &       \\
+$c_9$        &   1& 9&    &       &       &      & \app &       \\
+$c_{10}$--$c_{13}$ & 1& 4&       &       &  &  & & \app \\
+\bottomrule
+\end{tabular}
+\end{table}
+Committee highlighted in light-purple is in the core. In fact, this committee would be the choice for Utilitarian Greedy method, which simply aims to maximise number of approvals. In contrary, allocation $W=[c_1, c_6, c_7, c_8, c_9]$ looks to be more representative and fair.
+\end{example}
+Notably, a solution in the core might not always exist~\cite{EqualShares}, meaning the difficult computations might not lead to any satisfactory results.
+\section{Stable-Priceability}
+Stable priceability introduced by Peters et al \cite{MarketBased} aims to enhance traditional priceability definition by adding a constraint that requires that voters' money is also spent efficiently, alongside existing conditions on equal contributions from all voters. Though originally defined for approval-based committee elections, the base definition naturally extends beyond unit-cost assumption. Stable priceability can be formulated in two ways:
+\begin{definition}
+Let $\prec$ be a linear order over $\NN \times \RR_+$ defined as 
+$(x,p) \succ (y,q) \iff x > y \text{ or } (x=y \text{ and } p < q)$. We interpret $(x,p)\succ (y,q)$ as "voter prefers to pay $p$ for a committee where she approves $x$ candidates than pay $q$ for a committee where she supports $y$ members. Further, we say that $ps=(b, \{p_i\}_{i\in N})$ is a \textbf{stable price system} if it satisfies conditions $(C1)-(C4)$ and $(S5')$ defined as follows:\leavevmode\\
+\textbf{(S5'):} There exists no coalition of voters $S\subseteq N$, no subset $W'\subseteq C \setminus W$ and no collections $\{p_i\}_{i\in S}$ and $\{R_i\}_{i\in S}$ ($R_i\subseteq W$) such that the following conditions are satisfied:
+\begin{enumerate}
+    \item $\sum_{i\in S}p_i'(c)>cost(c)$ for each $c\in W'$.
+    \item $p_i(W \setminus R_i)+p_i'(W')\le b$ for each $i \in S$.
+    \item $\big(u_i(W\setminus R_i\cup W'), p_i(W\setminus R_i)+p_i'(W')\big) \succeq \big(u_i(W), p_i(W) \big)$ for each $i\in S$.
+\end{enumerate}
+which can be interpreted that there are no possible deviations from the chosen committee $W$, which lead to more satisfying outcome for all voters from some subset.
+\end{definition}
+This definition, though easy to read, does not appear to be easily computable. It turns out, that the following definition is synonymous with it.
+\begin{definition}
+We say that an allocation $W$ is supported by a \textbf{stable price system} $\text{ps} = (b, \{p_i\}_{i\in N})$ if it satisfies conditions $(C1)$ --- $(C4)$ from standard priceability definition and additionally fulfils the stability inequality $(S5)$ defined as:
+$$
+\mbox{\textbf{(S5)}} \quad \forall_{c\notin W}\sum_{i\in N(c)}\max\big(\max_{a\in W}(p_i(a)), r_i \big) \le cost(c).
+$$
+\end{definition}
+Condition $(S5)$ extends $(C5)$, because instead of looking only at the remainder for each supporter of an unchosen project, it also considers the largest payment made by each voter. This additional property prevents plenty of unwanted allocations, in contrary to classic priceability.
+
+\begin{example}
+Consider the same election instance from example $2$. $[c_1,c_2,c_3]$ is no longer accepted as a solution. Instead, only the light-blue outcome is SP.\leavevmode\\
+\begin{minipage}{0.45\textwidth}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+        & cost & \#app & $v_1$ & $v_2$ & $v_3$  \\
+\midrule
+$c_1$ & 1 &1 & \app &    \\
+$c_2$ & 1 &1 &      & \app  \\
+$c_3$ & 1 &1 &  &     & \app \\
+$c_4$ & 1 &3 & \app & \app    & \app     \\
+$c_5$ & 1 &3 & \app & \app & \app       \\
+$c_6$ & 1 &3 & \app  & \app & \app   \\
+\bottomrule
+\end{tabular}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.45\textwidth}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+        & cost & $v_1$ & $v_2$ & $v_3$  \\
+\midrule
+$c_1$ & 1 & 0 & 0 & 0    \\
+$c_2$ & 1 & 0 & 0 & 0  \\
+$c_3$ & 1 & 0 & 0 & 0 \\
+\rowcolor{blue!10}
+$c_4$ & 1 & \sfrac{1}{3} & \sfrac{1}{3} & \sfrac{1}{3}    \\
+\rowcolor{blue!10}
+$c_5$ & 1 & \sfrac{1}{3} & \sfrac{1}{3} & \sfrac{1}{3}       \\
+\rowcolor{blue!10}
+$c_6$ & 1 & \sfrac{1}{3} & \sfrac{1}{3} & \sfrac{1}{3}   \\
+\rowcolor{blue!30}
+$\sum$ & 3 & 1 & 1 & 1  \\
+$r_i$ & - & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{minipage}%
+\vspace{0.5em}
+\leavevmode\\ 
+$W=[c_1,c_2,c_3]$ violates the new constraint $(S5)$. For each $c\in [c_4,c_5,c_6]$ it holds that\\
+$\sum_{i\in N(c)}\max\big(\max_{a\in W}(p_i(a)), r_i \big)=3>1=cost(c)$.
+\end{example}
+It is also worth noting, that light-purple allocation from example 3. is not Stable Priceable, though it is in the core. With that example, we can see how SP aims to provide stronger proportionality guarantees.
+
+The most important property of stable priceability is that it implies the core. It is an especially handy property, since given an election and a committee $W$, it can be verified in polynomial time if $W$ is supported by a stable price system.
+
+It is proven that there exist instances of approval-based elections, for which there is no committee that is supported by a stable price system. However, in majority of real-life scenarios, a solution can be found~\cite{SPImplMasters}.
+
+Function for finding and verifying stable price systems has also been implemented in Pabutools. The ILP is defined as follows:
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{c|c|c|c}
+    \hline
+    \textbf{Variable} & \textbf{Domain} & \textbf{For all} & \textbf{Description}\\
+    \hline
+         $x_c$ & $\{0, 1\}$ & $c \in C$ & $x_c=1$ if $c\in W$ and $x_c=0$ otherwise  \\
+         $p_{i,c}$ & $\RR$ & $i \in N, \ c \in C$ & how much voter $i$ pays for candidate $c$\\
+         $b$ & $\RR$ & & single voter's budget \\
+         $r_i$ & $\RR$ & $i \in N$ & remaining budget for voter $i$ \\
+         $m_i$ & $\RR$ & $i\in N$ & max value of $r_i$ and all $p_{i,c}$
+    \end{tabular}
+    \caption{Variables in the ILP.}
+\end{table}
+
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.5}
+\centering
+\begin{tabular}{l|l r}
+\hline
+\textbf{Constraint} & \textbf{Formula} & \textbf{} \\
+\hline
+(C1) & $p_{i,c} = 0$ & $\forall i \in N,\ \forall c \notin A_i$ \\
+(C2) & $\sum_{c \in C} p_{i,c} \leq b$ & $\forall i \in N$ \\
+(C3) & $cost(c) + (x_c - 1)\cdot \text{INF} \leq \sum_{i \in N} p_{i,c} \leq cost(c)$ & $\forall c \in C$ \\
+(C4) & $0 \leq p_{i,c} \leq x_c \cdot \text{INF}$ & $\forall i \in N,\ \forall c \in C$ \\
+(S5) & $m_i\ge p_{i,c}$ & $\forall i \in N, \forall c \in C$ \\
+ & $r_i=b-\sum_{c\in C}p_{i,c}$ & $\forall i \in N$ \\
+ & $m_i\ge r_i$ & $\forall i \in N$\\
+ & $\sum_{i\in N(c)}m_i \le cost(c) + x_c \cdot \text{INF}$ & $\forall c \in C$\\
+\hline
+\end{tabular}
+\caption{Conditions of an ILP used for verifying SP allocations for approval-based elections.}
+\end{table}
+Constraints $(C1)-(C4)$ correspond to conditions from classic priceability definition. Constraint $(S5)$ captures inequality $\mbox{\textbf{(S5)}}$ by spreading it into $3$ subconstraints. The linear program above is the basis of all further work in the thesis on extending the formal definition of SP for non-approval voting.
+
+Beyond the base definition, the approval-based literature on stable priceability proposes relaxations of the stability constraint that quantify "how far" an allocation is from stability~\cite{SPImplMasters}. In the \emph{global} view, you allow the stability threshold to be uniformly loosened (or tightened) for all projects, yielding a single new score that summarized the gap. There are also \emph{local} variants, which loosen the limit separately on project-specific basis. We mention these ideas only for context, as this focuses only on the base definition of SP. Any relaxations mentioned in this thesis have only been studied for approval-based elections and would need further examination for any other settings.

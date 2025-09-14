@@ -1,0 +1,258 @@
+\chapter{The Stable-Priceability Axiom under Additive Utility Models}\label{chap:2}
+In this chapter, we extend the existing definition of Stable Priceability to the broader setting of cardinal utilities. Firstly, we explain why the original definition does not work well with the more general model. Then, we propose the new definition and prove its most important properties.
+\section{Motivation}
+The concept of \emph{stable priceability} has proven to be an insightful and powerful axiom thanks to its ability to ensure solid properties of proportionality by implying the core and extendend justified representation, all while remaining verifiable in polynomial time. It captures the idea that an outcome is not only supported by a standard price system, but also remains resistant against some forms of strategic deviations.
+
+Nevertheless, existing definitions of stability have so far covered only the specific settings of approval-based elections. Although this setting is valuable for its simplicity and computational tractability and therefore is arguably the most popular method of voting, it also comes with inherent limitations. Voters are unable to express their levels of potential enjoyment from the realisation of supported projects, meaning their ballot is less expressive and provides poorer representation of their true opinions. 
+
+Knowing the limitations of approval-based voting, numerous cities around the world allow for the casting of cardinal ballots in their participatory budgeting projects \cite{StrasbourgBallots, ToulouseBallots, GdanskBallots, PBElicitation}, subject to specific limitations such as allowing voters to spread some $l$ points between at least $k$ projects. These examples highlight the growing need to move beyond binary models when defining axioms used to evaluate the quality of election rules implemented in participatory budgeting instances.
+
+This brings up natural questions: whether the axiom of stable priceability can be extended to election instances with cardinal utilities allowed? How can the constraints be reinterpreted and adapted, in particular the ones involving voter budget reallocations, to accommodate the increased expressiveness of the additive utility model? In the next sections, a generalization of the SP concept is introduced, allowing for additive utilities. The aim of the extended axiom is to remain intuitively fair, while being computationally easy to check. We examine whether the most important implications from the approval-based setting continue to hold.
+
+\section{Definitions}
+Before we redefine the notion of stable priceability, it is important to understand the downsides of reusing the original definition to elections with additive utilities.
+\subsection{Original extension}
+Peters et al.\cite{MarketBased} define stable priceability mainly for approval-based committee elections, but they also allow for extensions to cardinal-based framework without unit-cost assumption. However, stable priceability axiom then loses its computational properties.
+
+In order to better understand the increased computational complexity involved in the cardinal-based setting, consider the problem in which we are given:
+\begin{itemize}
+    \item a set of items, each with its own weight and value.
+    \item a knapsack with a limited capacity.
+    \item the goal to select a subset of items maximizing total value without exceeding the knapsack size with total weight of all selected items.
+\end{itemize}
+It is well known that the knapsack is an NP-hard problem in the optimization version \cite{GareyJohnson} and verifying that a given subset of items is optimal is not computationally tractable in general.
+
+At a high level, the structure of stable priceability with cardinal utilities resembles the classical knapsack problem. In this analogy: items become candidates, weights become candidate costs, voter utilities correspond to item values and knapsack capacity becomes the sum of voter budgets.
+\begin{example}
+Consider a classical knapsack problem with 4 items:
+\begin{itemize}
+    \item Item 1: weight = 3, value = 5
+    \item Item 2: weight = 4, value = 6
+    \item Item 3: weight = 2, value = 3
+    \item Item 4: weight = 5, value = 7
+\end{itemize}
+and knapsack capacity = 7.
+
+The task is to select items whose total weight does not exceed 7, maximizing total value.
+
+This setting maps naturally to a stable priceability instance with cardinal utilities:
+
+\begin{itemize}
+    \item Candidates correspond to the items, with costs matching item weights.
+    \item A single voter assigns utilities corresponding to item values.
+    \item The voter's budget is 7 units.
+\end{itemize}
+
+The question of whether a given committee satisfies the SP conditions mirrors the difficulty in solving the knapsack optimization problem.
+\end{example}
+
+
+However, these problems are not analogous. In stable priceability, extra complexity comes from additional each voters' utility function, aside from the shared global budget threshold.
+
+This multi-agent variant of the knapsack problem introduces significant computational challenges. Ensuring that there are no profitable deviations for any coalition and candidate subset is computationally demanding.
+
+In the absence of any further restrictions, moving stable priceability definition towards cardinal ballots essentially inherits computational hardness related to knapsack-style problems. Realistically, it makes the axiom unusable for practical purposes, such as evaluating outcomes of participatory budgeting instances with thousands of ballots cast.
+\subsection{New definition}
+We propose a different approach, where the original intuitive definitions are left behind and we concentrate on augmenting the original ILP.
+
+Constraints $(C1)-(C4)$, remain as in the original linear program, because we still need all the basic ingredients of price systems. 
+\begin{table}[h!]
+\renewcommand{\arraystretch}{1.5}
+\centering
+\begin{tabular}{l|l r}
+\textbf{Constraint} & \textbf{Formula} & \textbf{} \\
+\hline
+(C1) & $p_{i,c} = 0$ & $\forall i \in N,\ \forall c \notin A_i$ \\
+(C2) & $\sum_{c \in C} p_{i,c} \leq b$ & $\forall i \in N$ \\
+(C3) & $cost(c) + (x_c - 1)\cdot \text{INF} \leq \sum_{i \in N} p_{i,c} \leq cost(c)$ & $\forall c \in C$ \\
+(C4) & $0 \leq p_{i,c} \leq x_c \cdot \text{INF}$ & $\forall i \in N,\ \forall c \in C$ \\
+\end{tabular}
+\caption{Base constraints for stable price systems.}
+\end{table}
+\leavevmode\\
+However, the $(S5)$ condition requires an overhaul. The notion of a \emph{profitable deviation} changes significantly, when we allow for non-binary utilities. Resigning from a single candidate and paying for another one the same price, does not guarantee that the overall satisfaction of voter will stay the same. 
+
+To better capture the increased complexity of possible deviations, we move towards \emph{cost-per-utility} ratio model. Rather than using a single per-voter variable $m_i$, we now define variables $m_{i,c}$ for each pair $(i,c)\in N \times C$. $m_{i,c}$ can be interpreted as the minimal value, for which voter $i$ has no incentive to alter his payments with the objective of influencing the election outcome in favour of candidate $c$. That is, he will not be interested in spending his remainder for $c$ and will not resign from any already-made payments if he has to spend $m_{i,c}$ for candidate $c$.
+
+Formally, in the linear program it is defined as follows:
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.5}
+    \centering
+    \begin{tabular}{c|c|c|c|c}
+    \hline
+    \textbf{Variable} & \textbf{Domain} & \textbf{For all} & \textbf{Description} & \textbf{Change} \\
+    \hline    
+         $m_{i,c}$ & $\RR$ & $i \in N, \ c \in C$ & Upper bound for $\frac{p_{i,c'}}{u_i(c')}$ & Added \\
+         $m_i$ & $\RR$ & $i\in N$ & max value of $r_i$ and all $p_{i,c}$ & Removed\\
+
+    \end{tabular}
+    \caption{Variable changes compared to original SP ILP.}
+    \label{tab:my_label}
+\end{table}
+
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.5}
+\centering
+\begin{tabular}{l|l r}
+\textbf{Constraint} & \textbf{Formula} & \textbf{} \\
+\hline
+(S5) & $\frac{m_{i,c}}{u_i(c)}\ge \frac{p_{i,c'}}{u_i(c')}$ & $\forall i \in N, \forall c,c' \in A(i)$ \\
+ & $m_{i,c} = 0$ & $\forall i \in N, \ \forall c \notin A(i)$ \\
+ & $r_i=b-\sum_{c\in C}p_{i,c}$ & $\forall i \in N$ \\
+ & $m_{i,c}\ge r_i$ & $\forall i \in N, \ \forall c \in A(i)$\\
+ & $\sum_{i\in N}m_{i,c}\le cost(c) + x_c\cdot \text{INF}$ & $\forall c \in C$ \\
+\end{tabular}
+\caption{Updated stability constraint for cardinal voting.}
+\end{table}
+\leavevmode\\
+\section{Reduction to approval utilities}
+As approval ballots can be considered a special case of cardinal ballots, the new definition of stable priceability should, given a binary ballot, yield the exact same results, as its approval-only counterpart. Below, we prove that this is the case with our extended definition. 
+\begin{theorem}New definition of stable priceability is equivalent to the original one in the case of binary utilities.
+\end{theorem}
+\emph{Proof.} Naturally, the reduction for conditions $(C1)-(C4)$ is one-to-one. The only constraint we consider is $(S5)$. Since utilities are binary, payment-related part of $(S5)$ simplifies to $m_{i,c}\ge p_{i,c'} \ \forall i \in N, \ c,c' \in A(i)$. Because of condition $(C1)$, voter $i$ pays $0$ for anything they do not support, meaning all $c'\notin A(i)$ can be ignored, as they only force $\forall c \in A(i) \ m_{i,c}\ge 0$. Remainder-related conditions are analogous $\forall i \in N \ m_i\ge r_i$ and $\forall i \in N, c \in A(i) \ m_{i,c}\ge r_i$. We must prove that $\sum_{i\in N}m_{i,c} = \sum_{i\in N(c)}m_i$. Because $m_{i, c}=0$ for $c\notin A(i)$, we have $\sum_{i\in N(c)}m_{i,c} = \sum_{i\in N(c)}m_i$. We have shown that this is indeed equal, as both remainder-related and payment-related constraints are equal for both cases.
+
+
+Therefore, the new formula reduces correctly to approval-based setting. In chapter~\ref{chap:3}, we describe how we ensure that this property holds also in the implementation in Pabutools library.
+
+Moreover, all stability relaxations, originally defined for elections with approval utilities, naturally reduce from cardinal ballots to their definitions for approval ballots, in the case of binary utilities.
+
+\section{Non-implying the core}
+While stable priceability in the approval-based setting guarantees core membership, this desirable property does not necessarily hold after moving to cardinal-based framework. The counterexample presented below demonstrates this gap.
+\begin{counterexample} Table on the left shows an instance of cardinal-based committee election with $4$ candidates and $4$ voters and the desired committee size $k=2$. Table on the right shows a stable price system $ps=(b, \{p_i\}_{i\in N})$, with voter budget $b=\frac{6}{9}$ and payment functions defined as in the table, supporting committee $W=[c_3,c_4]$ highlighted in light-yellow.
+\leavevmode\\
+\begin{minipage}{0.45\textwidth}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+        & cost  & $v_1$ & $v_2$ & $v_3$ & $v_4$  \\
+\midrule
+$c_1$ & 1  & 2 &   & 1 & 3   \\
+$c_2$ & 1  & 5 &   &   & 4\\
+$c_3$ & 1  & 1 & 1 & 2 &  \\
+$c_4$ & 1  & 3 & 4 &   & 2    \\
+\bottomrule
+\end{tabular}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.45\textwidth}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+        & cost & $v_1$ & $v_2$ & $v_3$ & $v_4$  \\
+\midrule
+$c_1$ & 1 & 0 & 0 & 0 & 0    \\
+$c_2$ & 1 & 0 & 0 & 0 & 0 \\
+\rowcolor{yellow!10}
+$c_3$ & 1 & $\sfrac{1}{9}$ & $\sfrac{2}{9}$ & $\sfrac{6}{9}$ & 0\\
+\rowcolor{yellow!10}
+$c_4$ & 1 & $\sfrac{3}{9}$ & $\sfrac{4}{9}$ & 0 & $\sfrac{2}{9}$\\
+\rowcolor{yellow!30}
+$\sum$ & 2 & $\sfrac{4}{9}$ & $\sfrac{6}{9}$ & $\sfrac{6}{9}$ & $\sfrac{2}{9}$ \\
+$r_i$ & - & $\sfrac{2}{9}$ & 0 & 0 & $\sfrac{4}{9}$ \\
+\bottomrule
+\end{tabular}
+\end{minipage}%
+\vspace{0.5em}
+\leavevmode\\ 
+$W$ is SP, because clearly constraints $(C1)$---$(C4)$ are satisfied. For $(S5)$ we need to consider both unselected candidates. First consider $c_2$. Only $v_1$ and $v_4$ support it, so $c_2$ could only gain payments from them. However, $m_{1,2}=\frac{5}{9}$ and $m_{4,2}=\frac{4}{9}$, so $\sum_{i\in N}m_{i,2}=1\le cost(c_2)$. For candidate $c_1$, it is also supported by one candidate with no leftover money, so we have $\sum_{i \in N}m_{i,2}=\frac{2}{9} + 0 +\frac{3}{9} + \frac{4}{9} = 1 \le cost(c)$. Therefore, allocation $W$ is indeed SP.
+
+Assume that $W$ being supported by a stable price system implies that $W$ belongs to the core. Consider $S=\{v_1,v_4\}$ and $T=\{c_2\}$. It holds that $\frac{|S|}{n} = \frac{2}{4} \ge \frac{1}{2} = \frac{|T|}{k}$. Moreover, $u_1(T)=5>4=u_1(W)$ and $u_4(T)=4>2=u_4(W)$. Therefore we have a subset of voters $S$ and a subset of candidates $T$, such that $T$ is a satisfying deviation for all $i\in S$. Which leads to a contradiction --- stable priceability does not imply the core. 
+\end{counterexample}
+\section{Implying the core up-to-one}
+Not implying the core can be considered a serious disadvantage to cardinal version of stable priceability. However, a property very close to core is implied by SP. Core up-to-one is a relaxation of the core concept.
+\begin{definition}
+An outcome is in the \textbf{core up-to-one} if for every $S\subseteq N$ and $T\subseteq C$ with $\frac{|S|}{n}\ge \frac{cost(T)}{n\cdot b}$ there exists $i\in S$ such that $u_i(W) + \max_{c\in T\setminus W} u_i(\{c\})\ge u_i(T)$.
+\end{definition}
+We prove that for cardinal utilities setting, outcome $W$ being supported by a stable price system implies that $W$ satisfies core up-to-one.
+\begin{theorem}
+    Stable priceability implies the core up-to-one in additive setting.
+\end{theorem}
+\emph{Proof.} Let $W$ be an allocation supported by a price system $ps=(b, \{p_i\}_{i\in N})$. Take $S\subseteq N$ and $T\subseteq C$ such that they violate core up-to-one, that is $\frac{|S|}{n}\ge\frac{cost(T)}{n\cdot b}$ and for all $i\in S$ $u_i(T)>u_i(W)+u_i(c)$ for all $c\in A(i)\cap (T\setminus W)$. If that holds for each voter $i$ for all $c\in A(i)\cap(T\setminus W)$, in particular it holds for $c_i^*=\arg\max_{c\in A(i)\cap (T\setminus W)}(u_i(c))$. Further in the proof $c_i^*$ is used many times. 
+
+Because $W$ is stable priceable, we know that
+$$
+\forall c \in W \quad \sum_{i\in N}p_{i,c} = cost(c)
+$$
+consequently
+$$
+\sum_{c\in T\cap W}\sum_{i\in N}p_{i,c}=cost(T\cap W).
+$$
+Similarly,
+$$
+\forall c \notin W \quad \sum_{i\in N}m_{i,c} \le cost(c)
+$$
+and so
+$$
+\sum_{c\in T\setminus W}\sum_{i\in N}m_{i,c}\le cost(T\setminus W).
+$$
+Summing up both inequalities
+$$
+\sum_{i\in N}\left(\sum_{c\in T\setminus W}m_{i,c} + \sum_{c\in T\cap W}p_{i,c}  \right) \le cost(T) \le |S|\cdot b
+$$
+because $S\subseteq N$, it holds that
+$$
+\sum_{i\in S}\left(\sum_{c\in T\setminus W}m_{i,c} + \sum_{c\in T\cap W}p_{i,c}  \right) \le \sum_{i\in N}\left(\sum_{c\in T\setminus W}m_{i,c} + \sum_{c\in T\cap W}p_{i,c}  \right)
+$$
+therefore
+$$
+\sum_{i\in S}\left(\sum_{c\in T\setminus W}m_{i,c} + \sum_{c\in T\cap W}p_{i,c}  \right) \le cost(T) \le |S|\cdot b.
+$$
+For each $i\in S$, break down $\sum_{c\in T\setminus W}m_{i,c}$ such that
+$$
+\sum_{c\in T\setminus W}m_{i,c}=\beta\cdot \sum_{c\in T\setminus W}m_{i,c} + (1-\beta)\cdot \sum_{c\in T\setminus W}m_{i,c}
+$$
+take $\beta=\frac{A}{A+B}$ for 
+$$A=u_i((T\setminus W) - \{c_i^*\}) \text{ and } B=u_i(c_i^*), \text{ making } A+B=u_i(T\setminus W).$$ Since $m_{i,c}\ge r_i$ for $c\in A(i)$ and $m_{i,c}=0$ for $c\notin A(i)$ we write
+$$
+(1-\beta)\cdot \sum_{c\in T\setminus W}m_{i,c} = (1-\beta)\cdot \sum_{c\in (T\setminus W)\cap A(i)}m_{i,c} \ge (1 - \beta)\cdot \sum_{c\in (T\setminus W)\cap A(i)}r_i =
+$$
+$$
+= (1-\beta)\cdot |(T\setminus W)\cap A(i)|\cdot r_i =\frac{u_i(c_i^*)}{u_i(T\setminus W)}\cdot |(T\setminus W)\cap A(i)|\cdot r_i=
+$$
+notice that $u_i(T\setminus W)=u_i((T\setminus W)\cap A(i))$
+$$
+=\frac{u_i(c_i^*)}{u_i((T\setminus W)\cap A(i))}\cdot |(T\setminus W)\cap A(i)|\cdot r_i
+$$
+because $c_i^*=\arg\max_{c\in A(i)\cap (T\setminus W)}(u_i(c))$, we write
+$$
+\frac{u_i(c_i^*)}{u_i((T\setminus W)\cap A(i))}\cdot |(T\setminus W)\cap A(i)|\cdot r_i \ge \frac{1}{|(T\setminus W)\cap A(i)|}\cdot |(T\setminus W)\cap A(i)|\cdot r_i=r_i.
+$$
+Again, looking at the first part of the sum from above
+$$
+\beta\cdot\sum_{c\in T\setminus W}m_{i,c}\ge \beta\cdot \alpha_i\cdot u_i(T\setminus W) =
+$$
+where $\alpha_i=\max_{c\in A(i)}\left(\frac{p_{i,c}}{u_i(c)} \right)$
+$$
+=\frac{u_i((T\setminus W)-\{c_i^*\})}{u_i(T\setminus W)}\cdot \alpha_i\cdot u_i(T\setminus W)=u_i((T\setminus W)-\{c_i^*\})\cdot \alpha_i =
+$$
+because $c_i^*=\arg\max_{A(i)\cap(T\setminus W)}$, we can write $u_i((T\setminus W)-\{c_i^*\})=u_i(T\setminus W)-u_i(c_i^*)=u_i(T)-u_i(T\cap W)-u_i(c_i^*)>u_i(W)-u_i(T\cap W)$, which follows from the starting assumption. Therefore, we say
+$$
+=u_i((T\setminus W)-\{c_i^*\})\cdot \alpha_i > u_i(W\setminus T)\cdot \alpha_i = \sum_{c\in W\setminus T}u_i(c)\cdot \alpha_i \ge 
+$$
+because $\alpha_i=\max_{c\in A(i)}\left(\frac{p_{i,c}}{u_i(c)} \right)$, then in particular $\alpha_i\ge \frac{p_{i,c}}{u_i(c)}$ for all $c\in W\setminus T$
+$$
+\ge \sum_{c\in W\setminus T}u_i(c)\cdot\frac{p_{i,c}}{u_i(c)} = \sum_{c\in W\setminus T}p_{i,c}
+$$
+summing up the two estimations, we get
+$$
+\sum_{c\in T\setminus W}m_{i,c} = \beta\cdot \sum_{c\in T\setminus W}m_{i,c} + (1-\beta)\cdot \sum_{c\in T\setminus W}m_{i,c} > r_i + \sum_{c\in W\setminus T}p_{i,c}.
+$$
+Substituting the estimation to the starting inequality
+$$
+\sum_{i\in S}\left( \sum_{c\in T\setminus W}m_{i,c} + \sum_{c\in T\cap W}p_{i,c} \right) > \sum_{i\in S}\left(r_i + \sum_{c\in W\setminus T}p_{i,c} + \sum_{c\in T\cap W}p_{i,c}\right) = \sum_{i\in S}\left(r_i+\sum_{c\in W}p_{i,c} \right)=
+$$
+for each voter it holds that $\sum_{c\in W}p_{i,c}=b-r_i$, we get
+$$
+=\sum_{i\in S}(r_i+b-r_i)=\sum_{i\in S}b = |S|\cdot b.
+$$
+However, at the beginning we wrote
+$$
+\sum_{i\in S}\left(\sum_{c\in T\setminus W}m_{i,c} + \sum_{c\in T\cap W}p_{i,c} \right) \le |S|\cdot b
+$$
+meaning we arrive at a contradiction
+$$
+\sum_{i\in S}\left(\sum_{c\in T\setminus W}m_{i,c} + \sum_{c\in T\cap W}p_{i,c} \right) \le |S|\cdot b \quad \text{and} \quad \sum_{i\in S}\left(\sum_{c\in T\setminus W}m_{i,c} + \sum_{c\in T\cap W}p_{i,c} \right) > |S|\cdot b.
+$$
+Thus, stable priceability implies the core up-to-one for cardinal-based elections.
+\section{Further observations}
+Although the extended definition of stable priceability does not preserve all the highly desired properties of the approval-based setting, most importantly implying the core, it still captures important aspects of fairness and proportionality. In particular, implication of the outcome being in the core up-to-one provides quite strong guarantees, which can still be viewed as useful, especially considering SP's good computational properties. The obtained results provide a compelling compromise between fairness guarantees and computational efficiency, all while remaining intuitively close to the original axiom.

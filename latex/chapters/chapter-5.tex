@@ -1,0 +1,25 @@
+\chapter{Conclusion}\label{chap:5}
+The recently introduced market-based axioms for proportionality --- stable-priceability and priceability --- have proved to imply a high degree of proportionality. Adjusting them to be suitable for more precise voting methods was a natural step to take in studying fairness properties in Participatory Budgeting elections.
+
+
+Extending the notion of stable priceability to account for cumulative profiles and, more generally, cardinal profiles allows for examining allocations and election rules in almost all instances of PB elections worldwide. Thanks to keeping its computational advantages over other axioms, such as the core, it will also make it possible to perform a quicker analysis of other traits of voting outcomes. The intuition behind the new definition is similar to original definition, therefore the implied fairness of the axiom holds. Moreover, we have defined and proved the most important properties of the newly defined stable priceability, namely
+\begin{enumerate}
+    \item it reduces to the original approval-based definition when working with binary utilities.
+    \item it does not improve the core in the general case, but it does imply the core up-to-one.
+    \item there exists an ILP program that can verify in polynomial time, given an election instance and an allocation, if that allocation is supported by a stable price system.
+\end{enumerate}
+
+Implementation of the algorithm for the new stable priceability definition in the open-source Pabutools library using state-of-the-art linear programming tools, alongside robust tests paves the way for further analysis of the defined properties by other researchers in the future. 
+
+Our empirical evaluation on a diverse collection of real‐world participatory budgeting instances—from several dozen Polish and other European cities—confirms the practical relevance of our approach.  We ran each of the five rules (MES, MES+Inc, MES+BOS, UGreedy and the MES+Inc+UGreedy hybrid) on over $300$ historical ballots, measuring 
+\begin{enumerate}
+    \item the fraction of priceable and stable priceable outcomes under the standard and cost‐weighted utility models.
+    \item the percentage of stable priceable outcomes, which are also exhaustive.
+    \item the overall coverage of priceability and stable priceability exercised by the $4$ tested election rules.
+    \item the fraction of elections, for which no method has found exhasutive priceable or stable priceable allocations, which do have such an allocation, and the fraction of elections, which do not have a single outcome satisfying those conditions.
+\end{enumerate}
+We observed that MES+Inc achieves the highest stable‐priceability rates (exceeding $90\%$ for cost-adjusted cases), and that combining it with the utilitarian greedy method recovers exhaustiveness without loss of stability in large majority of cases. Moreover, no single rule solved every instance perfectly, but the five‐rule portfolio provided perfect results for most of our dataset --- demonstrating both the strengths and complementarity of these methods in practice. 
+
+Beyond evaluation of existing rules, our results suggest promising avenues for new or tweaked election methods specifically designed to maximise stable priceability, especially under exhaustiveness clause. Preliminary experiments with different versions of the Method of Equal Shares  have shown potential gains of several percentage points in exhaustive stability rates, indicating that further rule‐design tailored to the cost‐weighted setting could yield even stronger proportionality guarantees without sacrificing computational tractability.
+
+Additionally, developing meaningful \emph{relaxations} of the formulation of SP under additive utilities is therefore a rich direction for future work. For instance, one could allow small “stability deficits” in exchange for greater exhaustiveness, or introduce budget‐slack parameters that flexibly trade off exact proportionality for practical implementability. Such relaxed variants could broaden the applicability of stable priceability to even more complex preference models and institutional constraints, while retaining its core normative appeal.  
